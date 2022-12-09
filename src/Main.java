@@ -1,5 +1,22 @@
 public class Main {
     public static void main(String[] args) {
-        System.out.println("Hello world!");
+        Field field = Field.parse("""
+                Щ - - * * - - - - -
+                - - - - * - * * - -
+                - - - * - * - - - *
+                - * - - - - - - Ч -
+                - - - - - - * - - -
+                - - * - - * - - - -
+                - - - * - - * * * -
+                - - - - - - - * - -
+                - - - - - - - * - -
+                - - - - - * * - - -""");
+
+        field.print();
+        field.printAccessibilityMask();
+
+
     }
+
+
 }
