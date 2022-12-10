@@ -1,20 +1,31 @@
 public class Main {
     public static void main(String[] args) {
+//        Field field = Field.parse("""
+//                Щ - - * * - - - - -
+//                - - - - * - * * - -
+//                - - - * - * - - - *
+//                - * - - - - - - Ч -
+//                - - - - - - * - - -
+//                - - * - - * - - - -
+//                - - - * - - * * * -
+//                - - - - - - - * - -
+//                - - - - - - - * - -
+//                - - - - - * * - - -""");
         Field field = Field.parse("""
                 Щ - - * * - - - - -
                 - - - - * - * * - -
                 - - - * - * - - - *
-                - * - - - - - - Ч -
+                - * - - - - - - - -
                 - - - - - - * - - -
                 - - * - - * - - - -
-                - - - * - - * * * -
+                - - - * - Ч * * * -
                 - - - - - - - * - -
                 - - - - - - - * - -
                 - - - - - * * - - -""");
 
         field.print();
         field.printAccessibilityMask();
-        field.find_and_print();
+        System.out.println(field.solution());
 
     }
 

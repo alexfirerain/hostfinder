@@ -5,6 +5,8 @@ import java.util.List;
 public class Field {
     char[][] cells;
     int masterX = -1, masterY = -1;
+    private char[][] cache;
+
 
     public Field(char[][] cells) {
         this.cells = cells;
@@ -14,6 +16,10 @@ public class Field {
         this.cells = cells;
         this.masterX = masterX;
         this.masterY = masterY;
+        cache = new char[masterY + 1][masterX + 1];
+        Arrays.stream(cache)
+                .forEach(row
+                        -> Arrays.fill(row, '?'));
     }
 
     public static Field parse(String field) {
@@ -65,28 +71,38 @@ public class Field {
         System.out.printf("Хозяин находится в координатах %s:%s%n", masterX, masterY);
     }
 
-    public boolean isReachableFromLeft(int x, int y) {
-        return x > 0 && cells[y][x - 1] != '*';
-    }
-    public boolean isReachableFromAbove(int x,  int y) {
-        return y > 0 && cells[y - 1][x] != '*';
+    public char checkCellReachability(int x, int y) {
+
+        if (cache[y][x] != '?') {
+            return cache[y][x];
+        }
+
+        char label;
+
+        boolean L = x > 0 && cells[y][x - 1] != '*';
+        boolean U = y > 0 && cells[y - 1][x] != '*';
+
+        if (L) {
+            label = U ? 'B' : 'L';
+        } else {
+            label = U ? 'U' : 'N';
+        }
+
+        cache[y][x] = label;
+
+        return label;
     }
 
-    public char checkCellReachability(int x, int y) {
-        return isReachableFromLeft(x, y) ?
-                'L' :
-                 isReachableFromAbove(x, y) ?
-                    'U' :
-                         'N';
-    }
 
     public void printAccessibilityMask() {
         StringBuilder sb = new StringBuilder();
         for (int y = 0; y < cells.length; y++) {
             for (int x = 0; x < cells[y].length; x++)
                 sb.append(
-                    cells[y][x] == '-' || cells[y][x] == 'Ч' ?
-                        checkCellReachability(x, y) :
+                    (cells[y][x] == '-' || cells[y][x] == 'Ч') &&
+                                        y < masterY &&
+                                        x < masterX ?
+                        cache[y][x] :
                             cells[y][x]
                 ).append(" ");
             sb.append("\n");
@@ -98,18 +114,21 @@ public class Field {
         System.out.printf("searching path for %d:%d\n", x, y);
         boolean[][] path = new boolean[cells.length][cells[0].length];
         boolean[][] downPath = null, rightPath = null;
+        char approachability = checkCellReachability(x, y);
 
-        if (isReachableFromAbove(x, y)) {
+        if (approachability == 'U' || approachability == 'B') {
             if (x == 0 && y == 1) {
                 path[y][x] = true;
+                printPathMask(path);
                 return path;
             }
             downPath = findPath(x, y - 1);
         }
 
-        if (isReachableFromLeft(x, y)) {
+        if (approachability == 'L' || approachability == 'B') {
             if (y == 0 && x == 1) {
                 path[y][x] = true;
+                printPathMask(path);
                 return path;
             }
             rightPath = findPath(x - 1, y);
@@ -118,34 +137,52 @@ public class Field {
         if (rightPath != null || downPath != null) {
             path = rightPath != null ? rightPath : downPath;
             path[y][x] = true;
-            System.out.printf("path of %d:%d found from %s%n", x, y, rightPath != null ? "left" : "above");
+            System.out.printf("path of %d:%d found from %s%n",
+                    x, y, rightPath != null ? "left" : "above");
+            printPathMask(path);
             return path;
         }
         System.out.printf("path of %d:%d not found%n", x, y);
+        printPathMask(path);
         return null;
     }
 
 
-    public void printPath(boolean[][] path) {
-        StringBuilder sb = new StringBuilder();
+    public String solution() {
+        boolean[][] path = findPath(masterX, masterY);
 
-        for (int i = 0; i < cells.length; i++) {
-            for (int j = 0; j < cells[i].length; j++)
-                sb.append(i < masterX &&
-                          j < masterY &&
-                          path[i][j] ?
+        if (path == null)
+            return "К сожалению, щенок не нашёл пути до хозяина.";
+
+        StringBuilder sb = new StringBuilder();
+        for (int y = 0; y < cells.length; y++) {
+            for (int x = 0; x < cells[y].length; x++)
+                sb.append(
+                        x <= masterX && y <= masterY &&
+                        (x != masterX || y != masterY) &&
+                        path[y][x] ?
                             "х" :
-                                cells[i][j]
+                                cells[y][x]
                          )
                   .append(" ");
             sb.append("\n");
         }
-
-        System.out.println(sb);
+        return sb.toString();
     }
 
     public void find_and_print() {
-        printPath(findPath(masterX, masterY));
+        System.out.println(solution());
+    }
+
+    public void printPathMask(boolean[][] path) {
+        StringBuilder sb = new StringBuilder();
+
+        for (boolean[] row : path) {
+            for (boolean cell : row)
+                sb.append(cell ? "х" : "-").append(" ");
+            sb.append("\n");
+        }
+        System.out.println(sb);
     }
 
 
