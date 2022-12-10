@@ -82,16 +82,71 @@ public class Field {
 
     public void printAccessibilityMask() {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < cells.length; i++) {
-            for (int j = 0; j < cells[i].length; j++)
+        for (int y = 0; y < cells.length; y++) {
+            for (int x = 0; x < cells[y].length; x++)
                 sb.append(
-                    cells[i][j] == '-' || cells[i][j] == 'Ч' ?
-                        checkCellReachability(j, i) :
-                            cells[i][j]
+                    cells[y][x] == '-' || cells[y][x] == 'Ч' ?
+                        checkCellReachability(x, y) :
+                            cells[y][x]
                 ).append(" ");
             sb.append("\n");
         }
         System.out.println(sb);
     }
+
+    public boolean[][] findPath(int x, int y) {
+        System.out.printf("searching path for %d:%d\n", x, y);
+        boolean[][] path = new boolean[cells.length][cells[0].length];
+        boolean[][] downPath = null, rightPath = null;
+
+        if (isReachableFromAbove(x, y)) {
+            if (x == 0 && y == 1) {
+                path[y][x] = true;
+                return path;
+            }
+            downPath = findPath(x, y - 1);
+        }
+
+        if (isReachableFromLeft(x, y)) {
+            if (y == 0 && x == 1) {
+                path[y][x] = true;
+                return path;
+            }
+            rightPath = findPath(x - 1, y);
+        }
+
+        if (rightPath != null || downPath != null) {
+            path = rightPath != null ? rightPath : downPath;
+            path[y][x] = true;
+            System.out.printf("path of %d:%d found from %s%n", x, y, rightPath != null ? "left" : "above");
+            return path;
+        }
+        System.out.printf("path of %d:%d not found%n", x, y);
+        return null;
+    }
+
+
+    public void printPath(boolean[][] path) {
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < cells.length; i++) {
+            for (int j = 0; j < cells[i].length; j++)
+                sb.append(i < masterX &&
+                          j < masterY &&
+                          path[i][j] ?
+                            "х" :
+                                cells[i][j]
+                         )
+                  .append(" ");
+            sb.append("\n");
+        }
+
+        System.out.println(sb);
+    }
+
+    public void find_and_print() {
+        printPath(findPath(masterX, masterY));
+    }
+
 
 }

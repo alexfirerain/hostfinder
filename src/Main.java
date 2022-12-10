@@ -14,7 +14,7 @@ public class Main {
 
         field.print();
         field.printAccessibilityMask();
-
+        field.find_and_print();
 
     }
 
