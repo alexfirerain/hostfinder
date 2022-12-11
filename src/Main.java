@@ -11,6 +11,7 @@ public class Main {
 //                - - - - - - - * - -
 //                - - - - - - - * - -
 //                - - - - - * * - - -""");
+
         Field field = Field.parse("""
                 Щ - - * * - - - - -
                 - - - - * - * * - -
@@ -18,14 +19,20 @@ public class Main {
                 - * - - - - - - - -
                 - - - - - - * - - -
                 - - * - - * - - - -
-                - - - * - Ч * * * -
+                - - - * - - * * * -
                 - - - - - - - * - -
                 - - - - - - - * - -
-                - - - - - * * - - -""");
+                - - - - - * * - - Ч""");
 
         field.print();
+
+        // краткое решение:
+//        System.out.println(field.solution());
+
+        // словообильное решение:
+        field.find_and_print();
+
         field.printAccessibilityMask();
-        System.out.println(field.solution());
 
     }
 

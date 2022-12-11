@@ -10,6 +10,17 @@ public class Field {
 
     public Field(char[][] cells) {
         this.cells = cells;
+        for (int y = 0; y < cells.length; y++)
+            for (int x = 0; x < cells[y].length; x++)
+                if (cells[y][x] == 'Ч') {
+                    masterX = x;
+                    masterY = y;
+                    break;
+                }
+        cache = new char[masterY + 1][masterX + 1];
+//        Arrays.stream(cache)
+//                .forEach(row
+//                        -> Arrays.fill(row, '?'));
     }
 
     public Field(char[][] cells, int masterX, int masterY) {
@@ -17,9 +28,9 @@ public class Field {
         this.masterX = masterX;
         this.masterY = masterY;
         cache = new char[masterY + 1][masterX + 1];
-        Arrays.stream(cache)
-                .forEach(row
-                        -> Arrays.fill(row, '?'));
+//        Arrays.stream(cache)
+//                .forEach(row
+//                        -> Arrays.fill(row, '?'));
     }
 
     public static Field parse(String field) {
@@ -68,12 +79,13 @@ public class Field {
             sb.append('\n');
         }
         System.out.print(sb);
-        System.out.printf("Хозяин находится в координатах %s:%s%n", masterX, masterY);
+        System.out.printf("Хозяин находится в координатах %s:%s%n%n", masterX, masterY);
     }
 
     public char checkCellReachability(int x, int y) {
 
-        if (cache[y][x] != '?') {
+        if (cache[y][x] != '\u0000') {
+            System.out.printf("cache requested: [%d, %d] -> %s%n", x, y, cache[y][x]);
             return cache[y][x];
         }
 
@@ -89,6 +101,7 @@ public class Field {
         }
 
         cache[y][x] = label;
+        System.out.printf("cache written: [%d, %d] <- %s%n", x, y, cache[y][x]);
 
         return label;
     }
@@ -110,8 +123,11 @@ public class Field {
         System.out.println(sb);
     }
 
-    public boolean[][] findPath(int x, int y) {
-        System.out.printf("searching path for %d:%d\n", x, y);
+    public boolean[][] findPath(int x, int y, boolean verbose) {
+
+        if (verbose)
+            System.out.printf("searching path for %d:%d\n", x, y);
+
         boolean[][] path = new boolean[cells.length][cells[0].length];
         boolean[][] downPath = null, rightPath = null;
         char approachability = checkCellReachability(x, y);
@@ -122,7 +138,7 @@ public class Field {
                 printPathMask(path);
                 return path;
             }
-            downPath = findPath(x, y - 1);
+            downPath = findPath(x, y - 1, verbose);
         }
 
         if (approachability == 'L' || approachability == 'B') {
@@ -131,25 +147,32 @@ public class Field {
                 printPathMask(path);
                 return path;
             }
-            rightPath = findPath(x - 1, y);
+            rightPath = findPath(x - 1, y, verbose);
         }
 
         if (rightPath != null || downPath != null) {
             path = rightPath != null ? rightPath : downPath;
             path[y][x] = true;
-            System.out.printf("path of %d:%d found from %s%n",
-                    x, y, rightPath != null ? "left" : "above");
-            printPathMask(path);
+
+            if (verbose) {
+                System.out.printf("path of %d:%d found from %s%n",
+                        x, y, rightPath != null ? "left" : "above");
+                printPathMask(path);
+            }
+
             return path;
         }
-        System.out.printf("path of %d:%d not found%n", x, y);
-        printPathMask(path);
+
+        if (verbose) {
+            System.out.printf("path of %d:%d not found%n", x, y);
+            printPathMask(path);
+        }
         return null;
     }
 
 
-    public String solution() {
-        boolean[][] path = findPath(masterX, masterY);
+    public String solution(boolean verbose) {
+        boolean[][] path = findPath(masterX, masterY, verbose);
 
         if (path == null)
             return "К сожалению, щенок не нашёл пути до хозяина.";
@@ -170,8 +193,12 @@ public class Field {
         return sb.toString();
     }
 
+    public String solution() {
+        return solution(false);
+    }
+
     public void find_and_print() {
-        System.out.println(solution());
+        System.out.println(solution(true));
     }
 
     public void printPathMask(boolean[][] path) {
